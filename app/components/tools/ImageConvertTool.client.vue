@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { GIFEncoder, quantize, applyPalette } from 'gifenc'
+import ImageTracer from 'imagetracerjs'
 import { canvasToBlob, encodeBmp, encodeIcoFromPng } from '~/utils/imageEncode'
 
 type Format =
@@ -10,8 +11,12 @@ type Format =
   | 'image/gif'
   | 'image/bmp'
   | 'image/x-icon'
+  | 'image/svg+xml'
+
+type SvgMode = 'trace' | 'embed'
 
 const format = ref<Format>('image/jpeg')
+const svgMode = ref<SvgMode>('trace')
 const quality = ref(0.9)
 const busy = ref(false)
 const error = ref('')
@@ -55,6 +60,49 @@ const extMap: Record<Format, string> = {
   'image/gif': 'gif',
   'image/bmp': 'bmp',
   'image/x-icon': 'ico',
+  'image/svg+xml': 'svg',
+}
+
+function scaleCanvasForTrace(source: HTMLCanvasElement, maxSide = 800): HTMLCanvasElement {
+  const scale = Math.min(1, maxSide / Math.max(source.width, source.height))
+  if (scale >= 1) return source
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(1, Math.round(source.width * scale))
+  canvas.height = Math.max(1, Math.round(source.height * scale))
+  const ctx = canvas.getContext('2d')!
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height)
+  return canvas
+}
+
+async function encodeSvg(canvas: HTMLCanvasElement): Promise<Blob> {
+  if (svgMode.value === 'embed') {
+    const png = await canvasToBlob(canvas, 'image/png')
+    if (!png) throw new Error('SVG embed failed')
+    const buf = new Uint8Array(await png.arrayBuffer())
+    let binary = ''
+    for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]!)
+    const b64 = btoa(binary)
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">
+  <image width="${canvas.width}" height="${canvas.height}" href="data:image/png;base64,${b64}" xlink:href="data:image/png;base64,${b64}"/>
+</svg>`
+    note.value = 'Embed mode wraps your image inside SVG (not true vector paths). Good for exact look.'
+    return new Blob([svg], { type: 'image/svg+xml' })
+  }
+
+  // Vectorize / trace — best for logos & simple graphics
+  const work = scaleCanvasForTrace(canvas)
+  const ctx = work.getContext('2d')!
+  const imageData = ctx.getImageData(0, 0, work.width, work.height)
+  const tracer = ImageTracer as { imagedataToSVG: (d: ImageData, o?: Record<string, unknown>) => string }
+  const svgstr = tracer.imagedataToSVG(imageData, {
+    numberofcolors: 16,
+    pathomit: 8,
+    ltres: 1,
+    qtres: 1,
+  })
+  note.value = 'Trace mode creates vector paths. Best for logos/icons; photos become simplified. Large images are scaled for speed.'
+  return new Blob([svgstr], { type: 'image/svg+xml' })
 }
 
 function isAllowedFile(file: File): boolean {
@@ -160,6 +208,10 @@ async function exportBlob(canvas: HTMLCanvasElement): Promise<Blob> {
     return blob
   }
 
+  if (format.value === 'image/svg+xml') {
+    return encodeSvg(canvas)
+  }
+
   const blob = await canvasToBlob(
     canvas,
     format.value,
@@ -220,6 +272,15 @@ onBeforeUnmount(() => {
         <option value="image/gif">GIF</option>
         <option value="image/bmp">BMP</option>
         <option value="image/x-icon">ICO</option>
+        <option value="image/svg+xml">SVG</option>
+      </select>
+    </label>
+
+    <label v-if="format === 'image/svg+xml'" class="mt-4 block text-sm font-medium text-slate-700">
+      SVG mode
+      <select v-model="svgMode" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2">
+        <option value="trace">Vectorize (trace paths) — best for PNG/JPG logos</option>
+        <option value="embed">Embed raster in SVG — keeps photo look</option>
       </select>
     </label>
 
@@ -247,7 +308,7 @@ onBeforeUnmount(() => {
     </label>
 
     <p class="mt-3 text-xs text-slate-500">
-      Supports JPG, PNG, WebP, GIF, BMP, AVIF, ICO. GIF keeps a still frame only (not full animation).
+      Supports JPG, PNG, WebP, GIF, BMP, AVIF, ICO, SVG. GIF is still-frame only. SVG trace works best on simple logos; use Embed for photos.
     </p>
 
     <p v-if="busy" class="mt-4 text-sm text-slate-600">Converting…</p>
