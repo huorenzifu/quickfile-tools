@@ -11,7 +11,7 @@ useSeoMeta({
   <div>
     <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Image Crop</h1>
     <p class="mt-2 max-w-2xl text-slate-600">
-      Set left, top, width, and height to crop precisely. Processing stays on your device.
+      Drag to select an area, move or resize the box, then download. Processing stays on your device.
     </p>
     <AdSlot class="mt-6" />
     <div class="mt-6">
