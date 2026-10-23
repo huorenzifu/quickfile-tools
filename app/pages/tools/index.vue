@@ -21,5 +21,19 @@ useSeoMeta({
         </NuxtLink>
       </li>
     </ul>
+
+    <h2 class="mt-12 text-xl font-semibold text-slate-900">Popular converters</h2>
+    <p class="mt-1 text-slate-600">SEO-focused pages for common format pairs.</p>
+    <ul class="mt-6 grid gap-3 sm:grid-cols-3">
+      <li v-for="item in CONVERSION_LANDINGS" :key="item.slug">
+        <NuxtLink
+          :to="item.path"
+          class="block rounded-xl border border-slate-200 bg-white p-4 hover:border-teal-300"
+        >
+          <h3 class="font-semibold text-slate-900">{{ item.fromLabel }} → {{ item.toLabel }}</h3>
+          <p class="mt-1 text-sm text-slate-600">{{ item.h1 }}</p>
+        </NuxtLink>
+      </li>
+    </ul>
   </div>
 </template>

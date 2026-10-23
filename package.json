@@ -16,6 +16,7 @@
     "browser-image-compression": "^2.0.2",
     "gifenc": "^1.0.3",
     "imagetracerjs": "^1.2.6",
+    "jszip": "^3.10.2",
     "nuxt": "^4.6.2",
     "pdf-lib": "^1.17.1",
     "vue": "^3.5.43",

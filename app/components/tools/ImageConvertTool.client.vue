@@ -1,50 +1,50 @@
 <script setup lang="ts">
 import { GIFEncoder, quantize, applyPalette } from 'gifenc'
 import ImageTracer from 'imagetracerjs'
+import JSZip from 'jszip'
 import { canvasToBlob, encodeBmp, encodeIcoFromPng } from '~/utils/imageEncode'
-
-type Format =
-  | 'image/jpeg'
-  | 'image/png'
-  | 'image/webp'
-  | 'image/avif'
-  | 'image/gif'
-  | 'image/bmp'
-  | 'image/x-icon'
-  | 'image/svg+xml'
+import type { OutputFormat } from '~/utils/conversions'
 
 type SvgMode = 'trace' | 'embed'
 
-const format = ref<Format>('image/jpeg')
-const svgMode = ref<SvgMode>('trace')
+type ResultItem = {
+  id: string
+  sourceName: string
+  name: string
+  url: string
+  size: number
+  originalSize: number
+}
+
+const props = withDefaults(defineProps<{
+  defaultFormat?: OutputFormat
+  lockFormat?: boolean
+  defaultSvgMode?: SvgMode
+  acceptOverride?: string
+}>(), {
+  defaultFormat: 'image/jpeg',
+  lockFormat: false,
+  defaultSvgMode: 'trace',
+  acceptOverride: '',
+})
+
+const format = ref<OutputFormat>(props.defaultFormat)
+const svgMode = ref<SvgMode>(props.defaultSvgMode)
 const quality = ref(0.9)
 const busy = ref(false)
+const progress = ref('')
 const error = ref('')
 const note = ref('')
-const resultUrl = ref('')
-const resultName = ref('')
-const resultSize = ref(0)
-const originalSize = ref(0)
+const results = ref<ResultItem[]>([])
+const zipUrl = ref('')
 
-const accept = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-  'image/bmp',
-  'image/x-ms-bmp',
-  'image/avif',
-  'image/x-icon',
-  'image/vnd.microsoft.icon',
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.webp',
-  '.gif',
-  '.bmp',
-  '.avif',
-  '.ico',
+const acceptDefault = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/x-ms-bmp',
+  'image/avif', 'image/x-icon', 'image/vnd.microsoft.icon',
+  '.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.avif', '.ico',
 ].join(',')
+
+const accept = computed(() => props.acceptOverride || acceptDefault)
 
 const needsQuality = computed(() =>
   format.value === 'image/jpeg'
@@ -52,7 +52,7 @@ const needsQuality = computed(() =>
   || format.value === 'image/avif',
 )
 
-const extMap: Record<Format, string> = {
+const extMap: Record<OutputFormat, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
@@ -61,6 +61,13 @@ const extMap: Record<Format, string> = {
   'image/bmp': 'bmp',
   'image/x-icon': 'ico',
   'image/svg+xml': 'svg',
+}
+
+function clearResults() {
+  for (const r of results.value) URL.revokeObjectURL(r.url)
+  results.value = []
+  if (zipUrl.value) URL.revokeObjectURL(zipUrl.value)
+  zipUrl.value = ''
 }
 
 function scaleCanvasForTrace(source: HTMLCanvasElement, maxSide = 800): HTMLCanvasElement {
@@ -86,11 +93,9 @@ async function encodeSvg(canvas: HTMLCanvasElement): Promise<Blob> {
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">
   <image width="${canvas.width}" height="${canvas.height}" href="data:image/png;base64,${b64}" xlink:href="data:image/png;base64,${b64}"/>
 </svg>`
-    note.value = 'Embed mode wraps your image inside SVG (not true vector paths). Good for exact look.'
     return new Blob([svg], { type: 'image/svg+xml' })
   }
 
-  // Vectorize / trace — best for logos & simple graphics
   const work = scaleCanvasForTrace(canvas)
   const ctx = work.getContext('2d')!
   const imageData = ctx.getImageData(0, 0, work.width, work.height)
@@ -101,7 +106,6 @@ async function encodeSvg(canvas: HTMLCanvasElement): Promise<Blob> {
     ltres: 1,
     qtres: 1,
   })
-  note.value = 'Trace mode creates vector paths. Best for logos/icons; photos become simplified. Large images are scaled for speed.'
   return new Blob([svgstr], { type: 'image/svg+xml' })
 }
 
@@ -125,13 +129,12 @@ async function loadToCanvas(file: File): Promise<HTMLCanvasElement> {
     return canvas
   }
   catch {
-    // Fallback for formats some browsers reject in createImageBitmap (e.g. ICO)
     const url = URL.createObjectURL(file)
     try {
       const img = await new Promise<HTMLImageElement>((resolve, reject) => {
         const el = new Image()
         el.onload = () => resolve(el)
-        el.onerror = () => reject(new Error('Could not decode this image in your browser.'))
+        el.onerror = () => reject(new Error(`Could not decode ${file.name}`))
         el.src = url
       })
       const canvas = document.createElement('canvas')
@@ -166,7 +169,6 @@ async function exportBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   if (!ctx) throw new Error('Canvas not supported')
 
   if (format.value === 'image/jpeg') {
-    // flatten transparency onto white
     const flat = document.createElement('canvas')
     flat.width = canvas.width
     flat.height = canvas.height
@@ -184,7 +186,6 @@ async function exportBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   }
 
   if (format.value === 'image/gif') {
-    note.value = 'GIF export is a single still frame (animation is not preserved).'
     return encodeGif(canvas)
   }
 
@@ -221,48 +222,91 @@ async function exportBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return blob
 }
 
-async function onFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+async function convertFiles(files: File[]) {
   error.value = ''
   note.value = ''
-  resultUrl.value = ''
-  if (!file) return
-  if (!isAllowedFile(file)) {
-    error.value = 'Please choose JPG, PNG, WebP, GIF, BMP, AVIF, or ICO.'
+  progress.value = ''
+  clearResults()
+  if (!files.length) return
+
+  const list = files.filter(isAllowedFile)
+  if (!list.length) {
+    error.value = 'Please choose supported image files.'
     return
   }
+  if (list.length < files.length) {
+    note.value = 'Some files were skipped because the type is not supported.'
+  }
+  if (list.some(f => f.type === 'image/gif' || f.name.toLowerCase().endsWith('.gif'))) {
+    note.value = [note.value, 'GIF uses the first frame only.'].filter(Boolean).join(' ')
+  }
+  if (format.value === 'image/svg+xml') {
+    note.value = [
+      note.value,
+      svgMode.value === 'trace'
+        ? 'SVG trace is best for logos; photos are simplified.'
+        : 'SVG embed keeps the raster look inside an SVG file.',
+    ].filter(Boolean).join(' ')
+  }
 
-  originalSize.value = file.size
   busy.value = true
+  const next: ResultItem[] = []
   try {
-    if (file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif')) {
-      note.value = 'Animated GIFs are converted using the first frame only.'
+    for (let i = 0; i < list.length; i++) {
+      const file = list[i]!
+      progress.value = `Converting ${i + 1} / ${list.length}: ${file.name}`
+      const canvas = await loadToCanvas(file)
+      const blob = await exportBlob(canvas)
+      const base = file.name.replace(/\.[^.]+$/, '')
+      const name = `${base}.${extMap[format.value]}`
+      next.push({
+        id: `${file.name}-${i}-${Date.now()}`,
+        sourceName: file.name,
+        name,
+        url: URL.createObjectURL(blob),
+        size: blob.size,
+        originalSize: file.size,
+      })
     }
-    const canvas = await loadToCanvas(file)
-    const blob = await exportBlob(canvas)
-    if (resultUrl.value) URL.revokeObjectURL(resultUrl.value)
-    resultUrl.value = URL.createObjectURL(blob)
-    resultSize.value = blob.size
-    const base = file.name.replace(/\.[^.]+$/, '')
-    resultName.value = `${base}.${extMap[format.value]}`
+    results.value = next
+
+    if (next.length > 1) {
+      progress.value = 'Building ZIP…'
+      const zip = new JSZip()
+      for (const item of next) {
+        const res = await fetch(item.url)
+        zip.file(item.name, await res.blob())
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      zipUrl.value = URL.createObjectURL(zipBlob)
+    }
+    progress.value = ''
   }
   catch (e) {
+    clearResults()
     error.value = e instanceof Error ? e.message : 'Conversion failed.'
   }
   finally {
     busy.value = false
+    progress.value = ''
   }
 }
 
+async function onFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = input.files ? Array.from(input.files) : []
+  await convertFiles(files)
+  input.value = ''
+}
+
 onBeforeUnmount(() => {
-  if (resultUrl.value) URL.revokeObjectURL(resultUrl.value)
+  clearResults()
 })
 </script>
 
 <template>
   <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-    <label class="block text-sm font-medium text-slate-700">
+    <label v-if="!lockFormat" class="block text-sm font-medium text-slate-700">
       Output format
       <select v-model="format" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2">
         <option value="image/jpeg">JPG</option>
@@ -275,11 +319,14 @@ onBeforeUnmount(() => {
         <option value="image/svg+xml">SVG</option>
       </select>
     </label>
+    <p v-else class="text-sm text-slate-600">
+      Output locked to <span class="font-semibold text-slate-900">{{ extMap[format].toUpperCase() }}</span>
+    </p>
 
     <label v-if="format === 'image/svg+xml'" class="mt-4 block text-sm font-medium text-slate-700">
       SVG mode
       <select v-model="svgMode" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2">
-        <option value="trace">Vectorize (trace paths) — best for PNG/JPG logos</option>
+        <option value="trace">Vectorize (trace paths) — best for logos</option>
         <option value="embed">Embed raster in SVG — keeps photo look</option>
       </select>
     </label>
@@ -298,36 +345,54 @@ onBeforeUnmount(() => {
     </label>
 
     <label class="mt-6 block">
-      <span class="text-sm font-medium text-slate-700">Choose image</span>
+      <span class="text-sm font-medium text-slate-700">Choose image(s) — batch supported</span>
       <input
         type="file"
         :accept="accept"
+        multiple
         class="mt-2 block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-teal-700 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-teal-800"
         @change="onFileChange"
       >
     </label>
 
     <p class="mt-3 text-xs text-slate-500">
-      Supports JPG, PNG, WebP, GIF, BMP, AVIF, ICO, SVG. GIF is still-frame only. SVG trace works best on simple logos; use Embed for photos.
+      Files stay on your device. Select multiple images for batch convert; download a ZIP when there is more than one result.
     </p>
 
-    <p v-if="busy" class="mt-4 text-sm text-slate-600">Converting…</p>
+    <p v-if="busy" class="mt-4 text-sm text-slate-600">{{ progress || 'Converting…' }}</p>
     <p v-if="note && !error" class="mt-4 text-sm text-amber-700">{{ note }}</p>
     <p v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</p>
 
-    <div v-if="resultUrl" class="mt-6 space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
-      <p>
-        <span class="font-medium">Original:</span> {{ formatBytes(originalSize) }}
-        →
-        <span class="font-medium">Result:</span> {{ formatBytes(resultSize) }}
-      </p>
+    <div v-if="results.length" class="mt-6 space-y-3">
       <a
-        :href="resultUrl"
-        :download="resultName"
-        class="inline-flex rounded-md bg-teal-700 px-4 py-2 font-medium text-white hover:bg-teal-800"
+        v-if="zipUrl"
+        :href="zipUrl"
+        download="converted-images.zip"
+        class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
       >
-        Download
+        Download all (ZIP)
       </a>
+      <ul class="space-y-2">
+        <li
+          v-for="item in results"
+          :key="item.id"
+          class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
+        >
+          <div>
+            <p class="font-medium text-slate-900">{{ item.name }}</p>
+            <p class="text-xs text-slate-500">
+              {{ item.sourceName }} · {{ formatBytes(item.originalSize) }} → {{ formatBytes(item.size) }}
+            </p>
+          </div>
+          <a
+            :href="item.url"
+            :download="item.name"
+            class="rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800"
+          >
+            Download
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
