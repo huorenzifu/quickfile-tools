@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Convert Image to JPG PNG WebP Free',
-  description: 'Convert images between JPG, PNG, and WebP in your browser. No uploads.',
+  title: 'Convert Image to JPG PNG WebP GIF BMP AVIF ICO',
+  description: 'Convert images between JPG, PNG, WebP, GIF, BMP, AVIF, and ICO in your browser. No uploads.',
   ogTitle: 'Convert Image Online Free',
   ogDescription: 'Private, browser-based image format conversion.',
 })
@@ -11,7 +11,7 @@ useSeoMeta({
   <div>
     <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Image Convert</h1>
     <p class="mt-2 max-w-2xl text-slate-600">
-      Convert between JPG, PNG, and WebP locally. Your file never leaves this device.
+      Convert between JPG, PNG, WebP, GIF, BMP, AVIF, and ICO locally. Your file never leaves this device.
     </p>
     <AdSlot class="mt-6" />
     <div class="mt-6">

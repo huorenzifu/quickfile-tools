@@ -21,7 +21,7 @@ export const TOOLS: ToolMeta[] = [
   {
     slug: 'image-convert',
     title: 'Image Convert',
-    description: 'Convert images between JPG, PNG, and WebP locally in your browser.',
+    description: 'Convert JPG, PNG, WebP, GIF, BMP, AVIF, and ICO locally in your browser.',
     path: '/tools/image-convert',
   },
   {
