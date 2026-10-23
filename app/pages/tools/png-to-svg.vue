@@ -27,6 +27,12 @@ useSeoMeta({
         </template>
       </ClientOnly>
     </div>
+    <p class="mt-8 text-sm text-slate-600">
+      Guide:
+      <NuxtLink to="/blog/png-to-svg-without-uploading" class="font-medium text-teal-700 hover:underline">
+        Convert PNG to SVG without uploading
+      </NuxtLink>
+    </p>
     <ConversionGuide :landing="landing" />
   </div>
 </template>
