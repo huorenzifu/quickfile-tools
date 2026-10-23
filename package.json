@@ -1,0 +1,25 @@
+{
+  "name": "quickfile-tools",
+  "private": true,
+  "description": "Free browser-based image & PDF tools. Compress, resize, and merge files locally — nothing uploaded.",
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@nuxt/content": "^3.16.1",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "better-sqlite3": "^13.0.3",
+    "browser-image-compression": "^2.0.2",
+    "nuxt": "^4.6.2",
+    "pdf-lib": "^1.17.1",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0"
+  }
+}
