@@ -11,7 +11,7 @@ useSeoMeta({
     <div class="prose-blog mt-6">
       <p>
         QuickFile Tools is a small collection of free utilities for everyday file tasks —
-        compressing images, resizing photos, and merging PDFs.
+        compressing, converting, cropping, and resizing images, plus merging and splitting PDFs.
       </p>
       <p>
         We designed every tool to run in your browser. Your files are processed on your device

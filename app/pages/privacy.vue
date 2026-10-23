@@ -13,8 +13,8 @@ useSeoMeta({
       <h2>File processing</h2>
       <p>
         Our tools process files in your browser using client-side scripts. We do not upload,
-        store, or transmit the contents of the files you select for Image Compress, Image Resize,
-        or PDF Merge.
+        store, or transmit the contents of the files you select for our image and PDF tools
+        (compress, resize, convert, crop, merge, and split).
       </p>
       <h2>Analytics</h2>
       <p>
@@ -31,7 +31,7 @@ useSeoMeta({
       <h2>Contact</h2>
       <p>
         For privacy questions, email
-        <a href="mailto:hello@quickfile.tools">hello@quickfile.tools</a>.
+        <a href="mailto:fanzzzza@gmail.com">fanzzzza@gmail.com</a>.
       </p>
     </div>
   </article>

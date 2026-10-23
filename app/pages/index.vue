@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useSeoMeta({
   title: 'Free Image & PDF Tools in Your Browser',
-  description: 'Compress images, resize photos, and merge PDFs locally. No uploads. Free forever.',
+  description: 'Compress, convert, crop, resize images, and merge or split PDFs locally. No uploads. Free forever.',
 })
 
 const { data: posts } = await useAsyncData('home-posts', () =>
@@ -19,7 +19,7 @@ const { data: posts } = await useAsyncData('home-posts', () =>
         File tools that stay on your device
       </h1>
       <p class="mt-4 max-w-lg text-teal-50/90">
-        Compress images, resize photos, and merge PDFs in the browser — private, fast, and free.
+        Compress, convert, crop, resize images, and merge or split PDFs in the browser — private, fast, and free.
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <NuxtLink
@@ -40,7 +40,7 @@ const { data: posts } = await useAsyncData('home-posts', () =>
     <section class="mt-12">
       <h2 class="text-xl font-semibold text-slate-900">Popular tools</h2>
       <p class="mt-1 text-slate-600">Everything runs locally in your browser.</p>
-      <ul class="mt-6 grid gap-4 sm:grid-cols-3">
+      <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <li v-for="tool in TOOLS" :key="tool.slug">
           <NuxtLink
             :to="tool.path"

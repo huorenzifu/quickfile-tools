@@ -19,10 +19,28 @@ export const TOOLS: ToolMeta[] = [
     path: '/tools/image-resize',
   },
   {
+    slug: 'image-convert',
+    title: 'Image Convert',
+    description: 'Convert images between JPG, PNG, and WebP locally in your browser.',
+    path: '/tools/image-convert',
+  },
+  {
+    slug: 'image-crop',
+    title: 'Image Crop',
+    description: 'Crop images to an exact region without uploading to a server.',
+    path: '/tools/image-crop',
+  },
+  {
     slug: 'pdf-merge',
     title: 'PDF Merge',
     description: 'Combine multiple PDFs into one file locally in your browser.',
     path: '/tools/pdf-merge',
+  },
+  {
+    slug: 'pdf-split',
+    title: 'PDF Split',
+    description: 'Extract a page range from a PDF entirely on your device.',
+    path: '/tools/pdf-split',
   },
 ]
 
