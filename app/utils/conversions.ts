@@ -113,4 +113,36 @@ export const CONVERSION_LANDINGS: ConversionLanding[] = [
       },
     ],
   },
+  {
+    slug: 'webp-to-png',
+    path: '/tools/webp-to-png',
+    title: 'WebP to PNG Converter Free (No Upload)',
+    h1: 'WebP to PNG Converter',
+    description: 'Convert WebP to PNG in your browser for wider compatibility. Files never leave your device.',
+    defaultFormat: 'image/png',
+    lockFormat: true,
+    accept: 'image/webp,.webp',
+    fromLabel: 'WebP',
+    toLabel: 'PNG',
+    compareRows: [
+      { label: 'Compatibility', from: 'Modern browsers & apps', to: 'Nearly universal' },
+      { label: 'Typical size', from: 'Often smaller', to: 'Often larger, lossless-friendly' },
+      { label: 'Transparency', from: 'Supported', to: 'Supported' },
+      { label: 'Privacy here', from: 'Local only', to: 'Local only' },
+    ],
+    faqs: [
+      {
+        q: 'Why convert WebP to PNG?',
+        a: 'Some editors, printers, and older apps still prefer PNG. PNG is a safe sharing format.',
+      },
+      {
+        q: 'Will the file get bigger?',
+        a: 'Often yes. WebP is usually more compact; PNG prioritizes compatibility and lossless detail.',
+      },
+      {
+        q: 'Do you upload my WebP?',
+        a: 'No. Conversion runs entirely in your browser.',
+      },
+    ],
+  },
 ]
