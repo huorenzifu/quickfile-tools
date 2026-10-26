@@ -145,4 +145,32 @@ export const CONVERSION_LANDINGS: ConversionLanding[] = [
       },
     ],
   },
+  {
+    slug: 'png-to-webp',
+    path: '/tools/png-to-webp',
+    title: 'PNG to WebP Converter Free (No Upload)',
+    h1: 'PNG to WebP Converter',
+    description: 'Convert PNG to WebP in your browser for smaller web images. Privacy-first, no uploads.',
+    defaultFormat: 'image/webp',
+    lockFormat: true,
+    accept: 'image/png,.png',
+    fromLabel: 'PNG',
+    toLabel: 'WebP',
+    compareRows: [
+      { label: 'Typical size', from: 'Often larger for photos', to: 'Often smaller on the web' },
+      { label: 'Transparency', from: 'Supported', to: 'Supported' },
+      { label: 'Best for', from: 'Sharp UI & logos', to: 'Web delivery when size matters' },
+      { label: 'Privacy here', from: 'Local only', to: 'Local only' },
+    ],
+    faqs: [
+      {
+        q: 'Should logos stay PNG?',
+        a: 'For maximum compatibility, PNG is fine. For websites, WebP often loads faster while keeping transparency.',
+      },
+      {
+        q: 'Can I convert many PNGs at once?',
+        a: 'Yes. Select multiple files and download a ZIP of the WebP results.',
+      },
+    ],
+  },
 ]

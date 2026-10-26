@@ -38,6 +38,22 @@ const { data: posts } = await useAsyncData('home-posts', () =>
     </section>
 
     <section class="mt-12">
+      <h2 class="text-xl font-semibold text-slate-900">Popular converters</h2>
+      <p class="mt-1 text-slate-600">High-intent format tools — private, no upload.</p>
+      <ul class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <li v-for="item in CONVERSION_LANDINGS" :key="item.slug">
+          <NuxtLink
+            :to="item.path"
+            class="block rounded-xl border border-teal-200 bg-teal-50/40 p-5 transition hover:border-teal-400 hover:bg-teal-50"
+          >
+            <h3 class="font-semibold text-slate-900">{{ item.fromLabel }} → {{ item.toLabel }}</h3>
+            <p class="mt-2 text-sm text-slate-600">{{ item.h1 }}</p>
+          </NuxtLink>
+        </li>
+      </ul>
+    </section>
+
+    <section class="mt-12">
       <h2 class="text-xl font-semibold text-slate-900">Popular tools</h2>
       <p class="mt-1 text-slate-600">Everything runs locally in your browser.</p>
       <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
