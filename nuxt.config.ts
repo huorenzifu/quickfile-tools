@@ -22,9 +22,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      // Set in Vercel: NUXT_PUBLIC_GA_ID=G-XXXXXXXX
-      gaId: '',
-      siteUrl: 'https://quickfile-tools.vercel.app',
+      // Override with NUXT_PUBLIC_GA_ID in Vercel if needed
+      gaId: process.env.NUXT_PUBLIC_GA_ID || 'G-18YQQ7BF2S',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://quickfile-tools.vercel.app',
     },
   },
   nitro: {
