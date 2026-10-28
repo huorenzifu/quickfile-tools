@@ -22,5 +22,15 @@ useSeoMeta({
         </template>
       </ClientOnly>
     </div>
+    <p class="mt-8 text-sm text-slate-600">
+      Guide:
+      <NuxtLink to="/blog/split-pdf-without-uploading" class="font-medium text-teal-700 hover:underline">
+        Split a PDF without uploading
+      </NuxtLink>
+      ·
+      <NuxtLink to="/tools/merge-pdf-online" class="font-medium text-teal-700 hover:underline">
+        Merge PDF online
+      </NuxtLink>
+    </p>
   </div>
 </template>
