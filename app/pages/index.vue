@@ -59,6 +59,15 @@ const { data: posts } = await useAsyncData('home-posts', () =>
             <p class="mt-2 text-sm text-slate-600">Merge PDF Online Free (No Upload)</p>
           </NuxtLink>
         </li>
+        <li>
+          <NuxtLink
+            to="/tools/compress-image-online"
+            class="block rounded-xl border border-teal-200 bg-teal-50/40 p-5 transition hover:border-teal-400 hover:bg-teal-50"
+          >
+            <h3 class="font-semibold text-slate-900">Compress Image</h3>
+            <p class="mt-2 text-sm text-slate-600">Compress Image Online Free (No Upload)</p>
+          </NuxtLink>
+        </li>
       </ul>
     </section>
 

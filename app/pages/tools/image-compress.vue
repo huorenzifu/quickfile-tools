@@ -23,7 +23,11 @@ useSeoMeta({
       </ClientOnly>
     </div>
     <p class="mt-8 text-sm text-slate-600">
-      Need a walkthrough?
+      SEO page:
+      <NuxtLink to="/tools/compress-image-online" class="font-medium text-teal-700 hover:underline">
+        Compress image online free
+      </NuxtLink>
+      ·
       <NuxtLink to="/blog/how-to-compress-images-online" class="font-medium text-teal-700 hover:underline">
         How to compress images online
       </NuxtLink>

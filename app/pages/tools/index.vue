@@ -43,6 +43,15 @@ useSeoMeta({
           <p class="mt-1 text-sm text-slate-600">Merge PDF Online Free</p>
         </NuxtLink>
       </li>
+      <li>
+        <NuxtLink
+          to="/tools/compress-image-online"
+          class="block rounded-xl border border-slate-200 bg-white p-4 hover:border-teal-300"
+        >
+          <h3 class="font-semibold text-slate-900">Compress Image</h3>
+          <p class="mt-1 text-sm text-slate-600">Compress Image Online Free</p>
+        </NuxtLink>
+      </li>
     </ul>
   </div>
 </template>
