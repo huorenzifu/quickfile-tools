@@ -23,7 +23,11 @@ useSeoMeta({
       </ClientOnly>
     </div>
     <p class="mt-8 text-sm text-slate-600">
-      Guide:
+      Guides:
+      <NuxtLink to="/blog/resize-image-for-web" class="font-medium text-teal-700 hover:underline">
+        Resize images for the web
+      </NuxtLink>
+      ·
       <NuxtLink to="/blog/how-to-resize-images-online" class="font-medium text-teal-700 hover:underline">
         How to resize images online
       </NuxtLink>

@@ -114,6 +114,38 @@ export const CONVERSION_LANDINGS: ConversionLanding[] = [
     ],
   },
   {
+    slug: 'jpg-to-png',
+    path: '/tools/jpg-to-png',
+    title: 'JPG to PNG Converter Free (No Upload)',
+    h1: 'JPG to PNG Converter',
+    description: 'Convert JPG/JPEG to PNG in your browser for editing or sharper graphics. No uploads.',
+    defaultFormat: 'image/png',
+    lockFormat: true,
+    accept: 'image/jpeg,.jpg,.jpeg',
+    fromLabel: 'JPG',
+    toLabel: 'PNG',
+    compareRows: [
+      { label: 'Compression', from: 'Lossy (typical photos)', to: 'Lossless-friendly for graphics' },
+      { label: 'File size', from: 'Usually smaller for photos', to: 'Often larger after conversion' },
+      { label: 'Best for', from: 'Photos and web delivery', to: 'Editing, screenshots, further processing' },
+      { label: 'Privacy here', from: 'Local only', to: 'Local only' },
+    ],
+    faqs: [
+      {
+        q: 'Why convert JPG to PNG?',
+        a: 'PNG is useful when you need a lossless-style format for editing, compositing, or workflows that prefer PNG.',
+      },
+      {
+        q: 'Will the PNG be bigger?',
+        a: 'Often yes. JPG is efficient for photos; PNG prioritizes detail retention over small file size.',
+      },
+      {
+        q: 'Can I convert multiple JPGs?',
+        a: 'Yes. Select multiple files and download a ZIP of the PNG results.',
+      },
+    ],
+  },
+  {
     slug: 'webp-to-png',
     path: '/tools/webp-to-png',
     title: 'WebP to PNG Converter Free (No Upload)',
